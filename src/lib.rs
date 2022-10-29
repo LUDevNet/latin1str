@@ -26,6 +26,7 @@
 
 use std::{
     borrow::{Borrow, Cow},
+    ffi::CStr,
     fmt,
     io::{self, BufRead},
     ops::Deref,
@@ -73,6 +74,7 @@ impl Latin1String {
     }
 
     /// Create a new instance by reading from a [`BufRead`] until a null terminator is found
+    /// or the end of the string is reached.
     ///
     /// ```
     /// use std::io::{Read, Cursor};
@@ -130,7 +132,17 @@ pub struct Latin1Str {
     inner: [u8],
 }
 
-#[cfg(feature = "serde-derives")]
+#[cfg(feature = "serde")]
+impl serde::Serialize for Latin1String {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.deref().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
 impl serde::Serialize for Latin1Str {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -169,7 +181,7 @@ impl Latin1Str {
     /// Wrap all bytes before the first nul as a [`Latin1Str`]
     ///
     /// This method will never fail
-    /// 
+    ///
     /// ```
     /// # use latin1str::Latin1Str;
     /// let s = Latin1Str::from_bytes_until_nul(b"Hello\0World!");
@@ -191,9 +203,8 @@ impl Latin1Str {
         Self::from_bytes_until_nul(bytes)
     }
 
-
     /// Get the bytes of the string
-    /// 
+    ///
     /// ```
     /// # use latin1str::Latin1Str;
     /// let s = Latin1Str::from_bytes_until_nul(b"Hello World!");
@@ -209,7 +220,7 @@ impl Latin1Str {
     }
 
     /// Check whether the str is empty
-    /// 
+    ///
     /// ```
     /// # use latin1str::Latin1Str;
     /// assert!(Latin1Str::from_bytes_until_nul(b"").is_empty());
@@ -220,7 +231,7 @@ impl Latin1Str {
     }
 
     /// Decode the string
-    /// 
+    ///
     /// ```
     /// # use latin1str::Latin1Str;
     /// let s = Latin1Str::from_bytes_until_nul(b"Fr\xFChling");
@@ -228,5 +239,12 @@ impl Latin1Str {
     /// ```
     pub fn decode(&self) -> Cow<str> {
         WINDOWS_1252.decode(self.as_bytes()).0
+    }
+}
+
+impl<'a> From<&'a CStr> for &'a Latin1Str {
+    fn from(v: &'a CStr) -> Self {
+        // SAFETY: CStr has no internal nul bytes and to_bytes does not expose the trailing one
+        unsafe { Latin1Str::from_bytes_unchecked(v.to_bytes()) }
     }
 }

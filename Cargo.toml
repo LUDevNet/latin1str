@@ -1,7 +1,7 @@
 [package]
 name = "latin1str"
 description = "Windows-1252 string types"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -10,3 +10,11 @@ repository = "https://github.com/LUDevNet/latin1str"
 [dependencies]
 encoding_rs = "0.8"
 memchr = "2.3"
+
+[dependencies.serde]
+version = "1"
+optional = true
+features = ["derive"]
+
+[features]
+serde = ["dep:serde"]
