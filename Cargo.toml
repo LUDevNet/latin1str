@@ -1,0 +1,12 @@
+[package]
+name = "latin1str"
+description = "Windows-1252 string types"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/LUDevNet/latin1str"
+
+[dependencies]
+encoding_rs = "0.8"
+memchr = "2.3"
