@@ -36,7 +36,7 @@ use encoding_rs::WINDOWS_1252;
 use memchr::memchr;
 
 #[repr(transparent)]
-#[derive(Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Ord, PartialOrd, Eq, PartialEq, Clone)]
 /// An owned latin-1 encoded string
 pub struct Latin1String {
     inner: Box<[u8]>,
