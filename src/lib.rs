@@ -132,6 +132,30 @@ pub struct Latin1Str {
     inner: [u8],
 }
 
+impl PartialEq<Latin1String> for Latin1Str {
+    fn eq(&self, other: &Latin1String) -> bool {
+        <Latin1Str as PartialEq>::eq(self, other)
+    }
+}
+
+impl PartialEq<Latin1String> for &Latin1Str {
+    fn eq(&self, other: &Latin1String) -> bool {
+        <Latin1Str as PartialEq>::eq(*self, other)
+    }
+}
+
+impl PartialEq<Latin1Str> for Latin1String {
+    fn eq(&self, other: &Latin1Str) -> bool {
+        <Latin1Str as PartialEq>::eq(self, other)
+    }
+}
+
+impl PartialEq<&Latin1Str> for Latin1String {
+    fn eq(&self, other: &&Latin1Str) -> bool {
+        <Latin1Str as PartialEq>::eq(self, *other)
+    }
+}
+
 #[cfg(feature = "serde")]
 impl serde::Serialize for Latin1String {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -246,5 +270,23 @@ impl<'a> From<&'a CStr> for &'a Latin1Str {
     fn from(v: &'a CStr) -> Self {
         // SAFETY: CStr has no internal nul bytes and to_bytes does not expose the trailing one
         unsafe { Latin1Str::from_bytes_unchecked(v.to_bytes()) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Latin1Str, Latin1String};
+
+    #[test]
+    fn test_eq() {
+        assert_eq!(
+            Latin1Str::from_bytes_until_nul(b""),
+            Latin1Str::from_bytes_until_nul(b"\0abc")
+        );
+
+        let slice = Latin1Str::from_bytes_until_nul(b"Hello World!");
+        let owned = Latin1String::encode("Hello World!").into_owned();
+        assert!(slice == owned);
+        assert!(owned == slice);
     }
 }
